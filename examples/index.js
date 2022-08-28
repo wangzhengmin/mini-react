@@ -1,6 +1,6 @@
 import ReactDOM from "../src/react-dom.js";
 import Component from "../src/Component.js";
-import React  from "react";
+import React  from "../src/react";
 
 class ElInput extends Component {
   constructor(props) {
@@ -16,8 +16,8 @@ function ElButton(props) {
 }
 ReactDOM.render(
   document.getElementById("app"),
-  <div>
-    hello word
+  <div key="title" id="title" refff="dd">
+  title
     {/* <h1>hello word</h1>
     <a href="mini-react">mini-react</a>
     <ElButton content="el-button" />

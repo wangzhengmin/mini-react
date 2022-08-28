@@ -32,6 +32,7 @@ export function createWorkInProgress(current, pendingProps) {
     workInProgress.type = current.type;
     workInProgress.alternate = current;
     current.alternate = workInProgress;
+    workInProgress.stateNode = current.stateNode;
   } else {
     workInProgress.pendingProps = pendingProps;
   }

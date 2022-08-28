@@ -7,13 +7,15 @@ function childReconciler(shouldTrackSideEffects) {
     const created = createFiberFromElement(element);
     created.return = returnFiber;
     return created;
+   
   }
 
   function placeSingleChild(newFiber) {
     // 是否需要添加副作用，并且新fiber没有alternate
     if(shouldTrackSideEffects && !newFiber.alternate) {
       newFiber.flags = Placement;
-    }
+    
+    } 
     return newFiber;
   }
 
@@ -39,5 +41,5 @@ function childReconciler(shouldTrackSideEffects) {
   return recondilerChildFibers;
 }
 
-export const mountChildFibers = childReconciler(true);
-export const recondilerChildFibers = childReconciler(false);
+export const mountChildFibers = childReconciler(false);
+export const recondilerChildFibers = childReconciler(true);
