@@ -35,7 +35,10 @@ function childReconciler(shouldTrackSideEffects) {
     }
   }
   function useFiber(oldFiber, pendingProps) {
-    return createWorkInProgress(oldFiber, pendingProps);
+    const clone = createWorkInProgress(oldFiber, pendingProps);
+    clone.index = oldFiber.index;
+    clone.sibling = null;
+    return clone;
   }
   /**
    * 协调单节点
@@ -85,28 +88,148 @@ function childReconciler(shouldTrackSideEffects) {
    * 如果新虚拟DOM 是一个数组
    * @param {*} returnFiber
    * @param {*} currentFirstChild
-   * @param {*} newChild
+   * @param {*} newChildren
    */
-  function reconcilerChildrenArray(returnFiber, currentFirstChild, newChild) {
+  function reconcilerChildrenArray(
+    returnFiber,
+    currentFirstChild,
+    newChildren
+  ) {
     let resultingFirstChild = null; // 将要返回的第一个新fiber
     let previousNewFiber = null; // 上一个新fiber
     let oldFiber = currentFirstChild; // 第一个老fiber
+    let nextOldFiber = null;
     let newIndex = 0; // 新虚拟DOM索引
-    if(!oldFiber) {
-      for(;newIndex < newChild.length;newIndex++) {
-        const newFiber = createChild(returnFiber, newChild[newIndex]);
+    let lastPlacedIndex = 0;
+    for (; oldFiber && newIndex < newChildren.length; newIndex++) {
+      nextOldFiber = oldFiber.sibling;
+      const newFiber = updateSlot(returnFiber, oldFiber, newChildren[newIndex]);
+      if (!newFiber) {
+        break;
+      }
+      // 旧fiber存在但是新fiber 没有复用旧fiber
+      if (oldFiber && !newFiber.alternate) {
+        deleteChild(returnFiber, oldFiber);
+      }
+      placeChild(newFiber, lastPlacedIndex, newIndex);
+      if (!previousNewFiber) {
+        resultingFirstChild = newFiber;
+      } else {
+        previousNewFiber.sibling = newFiber;
+      }
+      previousNewFiber = newFiber;
+      oldFiber = nextOldFiber;
+    }
+
+    if (newIndex === newChildren.length) {
+      deleteRemainingChildren(returnFiber, oldFiber);
+      return resultingFirstChild;
+    }
+
+    if (!oldFiber) {
+      for (; newIndex < newChildren.length; newIndex++) {
+        const newFiber = createChild(returnFiber, newChildren[newIndex]);
+        placeChild(newFiber, lastPlacedIndex, newIndex);
         // newFiber.flags = Placement;
-        if(!previousNewFiber) {
+        if (!previousNewFiber) {
           resultingFirstChild = newFiber;
         } else {
           previousNewFiber.sibling = newFiber;
         }
-        previousNewFiber = newFiber
+        previousNewFiber = newFiber;
+      }
+      return resultingFirstChild;
+    }
+    // 将剩下的旧fiber 放入map中
+    const existingChildren = mapRemainingChildren(returnFiber, oldFiber);
+    for (; newIndex < newChildren.length; newIndex++) {
+      const newFiber = updateFromMap(
+        existingChildren,
+        returnFiber,
+        newIndex,
+        newChildren[newIndex]
+      );
+      if (newFiber) {
+        // 是否是复用的
+        if (newFiber.alternate) {
+          existingChildren.delete(newFiber.key || newIndex);
+        }
+        lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIndex);
+        if (!previousNewFiber) {
+          resultingFirstChild = newFiber;
+        } else {
+          previousNewFiber.sibling = newFiber;
+        }
+        previousNewFiber = newFiber;
       }
     }
+    // 剩下未被复用的
+    existingChildren.forEach(child => deleteChild(returnFiber, child))
     return resultingFirstChild;
   }
-
+  function updateFromMap(existingChildren, returnFiber, newIndex, newChild) {
+    const matchedFiber = existingChildren.get(newChild.key || newIndex);
+    return updateElement(returnFiber, matchedFiber, newChild);
+  }
+  function mapRemainingChildren(returnFiber, oldFiber) {
+    const existingChildren = new Map();
+    let existingChild = oldFiber;
+    while (existingChild) {
+      let key = existingChild.key || existingChild.index;
+      existingChildren.set(key, existingChild);
+      existingChild = existingChild.sibling;
+    }
+    return existingChildren;
+  }
+  /**
+   * 给当前fiber添加副作用
+   * @param {*} newFiber
+   * @param {*} newIndex
+   * @returns
+   */
+  function placeChild(newFiber, lastPlacedIndex, newIndex) {
+    newFiber.index = newIndex;
+    if (!shouldTrackSideEffects) {
+      return lastPlacedIndex;
+    }
+    const current = newFiber.alternate;
+    if (current) {
+      const oldIndex = current.index;
+    
+      // 旧DOM是否需要移动
+      if (oldIndex < lastPlacedIndex) {
+        newFiber.flags |= Placement;
+        console.log("移动",oldIndex,lastPlacedIndex,  newFiber.flags)
+        return lastPlacedIndex;
+      } else {
+        return oldIndex;
+      }
+    } else {
+      newFiber.flags = Placement;
+      return lastPlacedIndex;
+    }
+  }
+  function updateSlot(returnFiber, oldFiber, newChild) {
+    const key = oldFiber ? oldFiber.key : null;
+    // 新虚拟DOM key 与老fiber key 一样
+    if (newChild.key === key) {
+      return updateElement(returnFiber, oldFiber, newChild);
+    } else {
+      return null;
+    }
+  }
+  function updateElement(returnFiber, oldFiber, newChild) {
+    if (oldFiber) {
+      if (oldFiber.type === newChild.type) {
+        const existing = useFiber(oldFiber, newChild.props);
+        existing.return = returnFiber;
+        return existing;
+      }
+    }
+    const created = createFiberFromElement(newChild);
+    created.return = returnFiber;
+    return created;
+  }
   function createChild(returnFiber, newChild) {
     const created = createFiberFromElement(newChild);
     created.return = returnFiber;

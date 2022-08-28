@@ -2,7 +2,7 @@ import { createWorkInProgress } from "./ReactFiber";
 import { beginWork } from "./ReactFiberBeginWork";
 import { commitDeletion, commitPlacement, commitWork } from "./ReactFiberCommitWork";
 import { completeWork } from "./ReactFiberCompleteWork";
-import { Deletion, Placement, Update } from "./ReactFiberFlags";
+import { Deletion, Placement, PlacementAndUpdate, Update } from "./ReactFiberFlags";
 
 let workInProgressRoot = null; // 当前正在更新的根
 let workInProgress = null; // 当前正在更新的fiber
@@ -35,6 +35,11 @@ function commitMutationEffects(root) {
     let current = nextEffect.alternate;
     if(flags === Placement) {
       commitPlacement(nextEffect);
+      
+    }else if(flags === PlacementAndUpdate) {
+      commitPlacement(nextEffect);
+      nextEffect.flags &= ~Placement;
+      commitWork(current,nextEffect)
     } else if(flags === Update) {
       commitWork(current,nextEffect)
     } else if(flags === Deletion)  {
@@ -43,7 +48,7 @@ function commitMutationEffects(root) {
     nextEffect = nextEffect.nextEffect;
   }
   effectList += "null";
-  // console.log(effectList);
+  console.log(effectList);
   // console.log(workInProgressRoot);
   root.current = finishedWork;
 }
@@ -141,6 +146,12 @@ function getFlags(flag) {
     }
     case Update:{
       return "更新"
+    }
+    case Deletion:{
+      return "删除"
+    }
+    case PlacementAndUpdate:{
+      return "移动"
     }
   }
 }

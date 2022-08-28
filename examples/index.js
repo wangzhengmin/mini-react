@@ -20,6 +20,9 @@ ReactDOM.render(
     <li key="A">A</li>
     <li key="B">B</li>
     <li key="C">C</li>
+    <li key="D">D</li>
+    <li key="E">E</li>
+    <li key="F">F</li>
   </ul>
 );
 
@@ -49,3 +52,48 @@ update3.addEventListener("click", function () {
     </ul>
   );
 });
+update4.addEventListener("click", function () {
+  ReactDOM.render(
+    document.getElementById("app"),
+    <ul>
+      <li key="A">A</li>
+      <p key="B">P2</p>
+      <li key="C">C2</li>
+    </ul>
+  );
+});
+update5.addEventListener("click", function () {
+  ReactDOM.render(
+    document.getElementById("app"),
+    <ul>
+      <li key="A">A</li>
+    <li key="B">B</li>
+    <li key="C">C</li>
+    <li key="D">D</li>
+    </ul>
+  );
+});
+
+update6.addEventListener("click", function () {
+  ReactDOM.render(
+    document.getElementById("app"),
+    <ul>
+      <li key="A">A</li>
+    <li key="B">B</li>
+    </ul>
+  );
+});
+update7.addEventListener("click", function () {
+  ReactDOM.render(
+    document.getElementById("app"),
+    <ul>
+    <li key="A">A</li>
+    <li key="C">C</li>
+    <li key="E">E</li>
+    <li key="B">B</li>
+    <li key="G">G</li>
+    <li key="D">D</li>
+    </ul>
+  );
+});
+
