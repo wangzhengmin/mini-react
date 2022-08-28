@@ -17,9 +17,10 @@ function ElButton(props) {
 ReactDOM.render(
   document.getElementById("app"),
   <div>
-    <h1>hello word</h1>
+    hello word
+    {/* <h1>hello word</h1>
     <a href="mini-react">mini-react</a>
     <ElButton content="el-button" />
-    <ElInput content="el-input"/>
+    <ElInput content="el-input"/> */}
   </div>
 );

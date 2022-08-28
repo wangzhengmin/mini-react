@@ -1,18 +1,21 @@
-function render(container, vnode) {
-  const node = createNode(vnode);
+import { updateContainer } from "./ReactFiberReconciler";
+import { createFiberRoot } from "./ReactFiberRoot";
 
-  container.appendChild(node);
+function render(container, vnode) {
+  let fiberRoot = createFiberRoot(container);
+  updateContainer(vnode, fiberRoot)
+  // const node = createNode(vnode);
+
+  // container.appendChild(node);
 }
 
 // 创建真实dom节点
 function createNode(vnode) {
-  console.log("type", vnode);
   let { type } = vnode;
   let node;
   if (typeof type === "string") {
     node = updateHostComponent(vnode);
   } else if (typeof type === "function") {
-    console.log(vnode.isReactComponent);
     node = type.prototype.isReactComponent
       ? updateClassComponent(vnode)
       : updateFunctionComponent(vnode);
