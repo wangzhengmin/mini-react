@@ -1,7 +1,8 @@
 import { createWorkInProgress } from "./ReactFiber";
 import { beginWork } from "./ReactFiberBeginWork";
+import { commitDeletion, commitPlacement, commitWork } from "./ReactFiberCommitWork";
 import { completeWork } from "./ReactFiberCompleteWork";
-import { Placement } from "./ReactFiberFlags";
+import { Deletion, Placement, Update } from "./ReactFiberFlags";
 
 let workInProgressRoot = null; // 当前正在更新的根
 let workInProgress = null; // 当前正在更新的fiber
@@ -31,23 +32,22 @@ function commitMutationEffects(root) {
   while (nextEffect) {
     effectList += `(${getFlags(nextEffect.flags)}#${nextEffect.type}#${nextEffect.key})`;
     const flags = nextEffect.flags;
+    let current = nextEffect.alternate;
     if(flags === Placement) {
       commitPlacement(nextEffect);
+    } else if(flags === Update) {
+      commitWork(current,nextEffect)
+    } else if(flags === Deletion)  {
+      commitDeletion(nextEffect)
     }
     nextEffect = nextEffect.nextEffect;
   }
   effectList += "null";
-  console.log(effectList);
-  console.log(workInProgressRoot);
+  // console.log(effectList);
+  // console.log(workInProgressRoot);
   root.current = finishedWork;
 }
 
-
-function commitPlacement(nextEffect) {
-  let stateNode = nextEffect.stateNode;
-  let parentStateNode = nextEffect.return.stateNode.containerInfo;
-  parentStateNode.appendChild(stateNode)
-}
 /**
  * 自上而下构建新的fiber树
  */
@@ -138,6 +138,9 @@ function getFlags(flag) {
   switch(flag) {
     case Placement:{
       return "添加"
+    }
+    case Update:{
+      return "更新"
     }
   }
 }

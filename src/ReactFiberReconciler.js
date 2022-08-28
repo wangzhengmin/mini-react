@@ -9,7 +9,7 @@ import { createUpdate, enqueueUpdate } from "./ReactUpdateQueue";
 export function updateContainer(element,container) {
   const current = container.current;
   const update  = createUpdate();
-  update.paylod = {element};
+  update.payload = {element};
   enqueueUpdate(current, update);
   scheduleUpdateOnFiber(current);
 }

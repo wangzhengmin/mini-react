@@ -2,11 +2,11 @@ import { updateContainer } from "./ReactFiberReconciler";
 import { createFiberRoot } from "./ReactFiberRoot";
 
 function render(container, vnode) {
-  let fiberRoot = createFiberRoot(container);
-  updateContainer(vnode, fiberRoot)
-  // const node = createNode(vnode);
-
-  // container.appendChild(node);
+  let fiberRoot = container._reactRootContainer;
+  if (!fiberRoot) {
+    fiberRoot = container._reactRootContainer = createFiberRoot(container);
+  }
+  updateContainer(vnode, fiberRoot);
 }
 
 // 创建真实dom节点

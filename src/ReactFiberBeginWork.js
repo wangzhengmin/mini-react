@@ -23,7 +23,7 @@ export function beginWork(current, workInProgress) {
  */
 function updateHostRoot(current, workInProgress) {
   const updateQueue = workInProgress.updateQueue;
-  const nextChildren = updateQueue.shared.pending.paylod.element;
+  const nextChildren = updateQueue.shared.pending.payload.element;
   // 处理子节点，根据老fiber和新的虚拟DOM，创建新的fiber
   recondilerChildren(current, workInProgress, nextChildren);
   return workInProgress.child;
