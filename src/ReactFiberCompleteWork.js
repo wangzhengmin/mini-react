@@ -1,4 +1,4 @@
-import { createInstance, finalizeInitialChildren, prepareUpdate } from "./ReactDOMHostConfig";
+import { appendChild, createInstance, finalizeInitialChildren, prepareUpdate } from "./ReactDOMHostConfig";
 import { Update } from "./ReactFiberFlags";
 import { HostComponent } from "./ReactWorkTags";
 
@@ -17,6 +17,7 @@ export function completeWork(current, workInProgress) {
         const { type } = workInProgress;
         // 创建真实don
         const instance = createInstance(type, newProps);
+        appendAllChildren(instance, workInProgress)
         workInProgress.stateNode = instance;
         // 给真实DOM添加属性
         finalizeInitialChildren(instance, type, newProps);
@@ -24,6 +25,21 @@ export function completeWork(current, workInProgress) {
 
       break;
     }
+  }
+}
+
+/**
+ * 将所有子节点添加到父节点
+ * @param {*} parent 
+ * @param {*} workInProgress 
+ */
+function appendAllChildren(parent, workInProgress) {
+  let node = workInProgress.child;
+  while(node) {
+    if(node.tag === HostComponent) {
+      appendChild(parent, node.stateNode)
+    }
+    node = node.sibling;
   }
 }
 /**

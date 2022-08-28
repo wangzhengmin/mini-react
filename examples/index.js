@@ -16,13 +16,11 @@ function ElButton(props) {
 }
 ReactDOM.render(
   document.getElementById("app"),
-  <div key="title" id="title">
-    title
-    {/* <h1>hello word</h1>
-    <a href="mini-react">mini-react</a>
-    <ElButton content="el-button" />
-    <ElInput content="el-input"/> */}
-  </div>
+  <ul>
+    <li key="A">A</li>
+    <li key="B">B</li>
+    <li key="C">C</li>
+  </ul>
 );
 
 let updateBtn = document.getElementById("update");
@@ -41,5 +39,13 @@ update2.addEventListener("click", function () {
     <span key="title2" id="title2">
       title2
     </span>
+  );
+});
+update3.addEventListener("click", function () {
+  ReactDOM.render(
+    document.getElementById("app"),
+    <ul>
+      <li key="B">B</li>
+    </ul>
   );
 });

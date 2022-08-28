@@ -34,8 +34,8 @@ function childReconciler(shouldTrackSideEffects) {
       childToDelete = childToDelete.sibling;
     }
   }
-  function useFiber(oldFiber,pendingProps) {
-    return createWorkInProgress(oldFiber,pendingProps)
+  function useFiber(oldFiber, pendingProps) {
+    return createWorkInProgress(oldFiber, pendingProps);
   }
   /**
    * 协调单节点
@@ -81,7 +81,37 @@ function childReconciler(shouldTrackSideEffects) {
     }
     return newFiber;
   }
+  /**
+   * 如果新虚拟DOM 是一个数组
+   * @param {*} returnFiber
+   * @param {*} currentFirstChild
+   * @param {*} newChild
+   */
+  function reconcilerChildrenArray(returnFiber, currentFirstChild, newChild) {
+    let resultingFirstChild = null; // 将要返回的第一个新fiber
+    let previousNewFiber = null; // 上一个新fiber
+    let oldFiber = currentFirstChild; // 第一个老fiber
+    let newIndex = 0; // 新虚拟DOM索引
+    if(!oldFiber) {
+      for(;newIndex < newChild.length;newIndex++) {
+        const newFiber = createChild(returnFiber, newChild[newIndex]);
+        // newFiber.flags = Placement;
+        if(!previousNewFiber) {
+          resultingFirstChild = newFiber;
+        } else {
+          previousNewFiber.sibling = newFiber;
+        }
+        previousNewFiber = newFiber
+      }
+    }
+    return resultingFirstChild;
+  }
 
+  function createChild(returnFiber, newChild) {
+    const created = createFiberFromElement(newChild);
+    created.return = returnFiber;
+    return created;
+  }
   /**
    *
    * @param {*} returnFiber 新的父fiber
@@ -99,6 +129,9 @@ function childReconciler(shouldTrackSideEffects) {
           );
         }
       }
+    }
+    if (Array.isArray(newChild)) {
+      return reconcilerChildrenArray(returnFiber, currentFirstChild, newChild);
     }
   }
   return recondilerChildFibers;
